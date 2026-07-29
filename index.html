@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>James Family Kitchen</title>
+
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f4f4;
+    padding:20px;
+}
+
+.container{
+    max-width:600px;
+    margin:auto;
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+h1{
+    text-align:center;
+}
+
+label{
+    display:block;
+    margin-top:15px;
+    font-weight:bold;
+}
+
+input,select,textarea{
+    width:100%;
+    padding:10px;
+    margin-top:5px;
+    border:1px solid #ccc;
+    border-radius:8px;
+}
+
+button{
+    width:100%;
+    margin-top:20px;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    background:#28a745;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#218838;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🍴 James Family Kitchen</h1>
+
+<form id="orderForm">
+
+<label>Name</label>
+<input type="text" id="name" required>
+
+<label>Date</label>
+<select id="date">
+    <option>2 Aug 2026</option>
+    <option>3 Aug 2026</option>
+    <option>4 Aug 2026</option>
+</select>
+
+<label>Meal</label>
+<select id="meal">
+    <option>Breakfast</option>
+    <option>Lunch</option>
+    <option>Dinner</option>
+</select>
+
+<label>Food Item</label>
+<select id="food">
+    <option>Chicken Rice</option>
+    <option>Curry Chicken</option>
+    <option>Fried Rice</option>
+</select>
+
+<label>Pickup Time</label>
+<input type="time" id="time">
+
+<label>Exclude Ingredients</label>
+<select id="exclude" multiple>
+    <option>Chilli</option>
+    <option>Peanuts</option>
+    <option>Coriander</option>
+    <option>Spring Onion</option>
+</select>
+
+<label>Special Notes</label>
+<textarea id="notes"></textarea>
+
+<button type="submit">
+Place Order
+</button>
+
+</form>
+
+</div>
+
+<script>
+
+document.getElementById("orderForm")
+.addEventListener("submit", function(e){
+
+e.preventDefault();
+
+const formURL =
+"https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse";
+
+const excludes = Array.from(
+document.getElementById("exclude").selectedOptions
+).map(o => o.value).join(", ");
+
+const formData = new FormData();
+
+formData.append(
+"entry.111111111",
+document.getElementById("name").value
+);
+
+formData.append(
+"entry.222222222",
+document.getElementById("date").value
+);
+
+formData.append(
+"entry.333333333",
+document.getElementById("meal").value
+);
+
+formData.append(
+"entry.444444444",
+document.getElementById("food").value
+);
+
+formData.append(
+"entry.555555555",
+document.getElementById("time").value
+);
+
+formData.append(
+"entry.666666666",
+excludes
+);
+
+formData.append(
+"entry.777777777",
+document.getElementById("notes").value
+);
+
+fetch(formURL,{
+    method:"POST",
+    mode:"no-cors",
+    body:formData
+});
+
+alert("Order submitted!");
+
+document.getElementById("orderForm").reset();
+
+});
+
+</script>
+
+</body>
+</html>
