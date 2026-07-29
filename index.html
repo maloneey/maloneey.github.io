@@ -2,180 +2,272 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>James's Kitchen</title>
+<title>Family Kitchen</title>
 
 <style>
 
 body{
-    font-family: Arial, sans-serif;
-    background:#f4f4f4;
-    padding:20px;
+font-family:Arial;
+max-width:700px;
+margin:auto;
+padding:20px;
 }
 
-.container{
-    max-width:600px;
-    margin:auto;
-    background:white;
-    padding:25px;
-    border-radius:15px;
-    box-shadow:0 0 10px rgba(0,0,0,0.1);
-}
-
-h1{
-    text-align:center;
-}
-
-label{
-    display:block;
-    margin-top:15px;
-    font-weight:bold;
-}
-
-input,select,textarea{
-    width:100%;
-    padding:10px;
-    margin-top:5px;
-    border:1px solid #ccc;
-    border-radius:8px;
+select,input,textarea{
+width:100%;
+padding:10px;
+margin:10px 0;
 }
 
 button{
-    width:100%;
-    margin-top:20px;
-    padding:12px;
-    border:none;
-    border-radius:8px;
-    background:#28a745;
-    color:white;
-    font-size:16px;
-    cursor:pointer;
-}
-
-button:hover{
-    background:#218838;
+padding:10px;
+background:green;
+color:white;
+border:none;
+cursor:pointer;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<div class="container">
+<h1>🍴 Family Kitchen</h1>
 
-<h1>🍴 James's Kitchen</h1>
+<input id="name" placeholder="Your Name">
 
-<form id="orderForm">
+<select id="date"></select>
 
-<label>Name</label>
-<input type="text" id="name" required>
+<select id="meal"></select>
 
-<label>Date</label>
-<select id="date">
-    <option>2 Aug 2026</option>
-    <option>3 Aug 2026</option>
-    <option>4 Aug 2026</option>
-</select>
+<select id="food"></select>
 
-<label>Meal</label>
-<select id="meal">
-    <option>Breakfast</option>
-    <option>Lunch</option>
-    <option>Dinner</option>
-</select>
+<select id="time"></select>
 
-<label>Food Item</label>
-<select id="food">
-    <option>Chicken Rice</option>
-    <option>Curry Chicken</option>
-    <option>Fried Rice</option>
-</select>
+<label>
+Ingredients To Exclude
+</label>
 
-<label>Pickup Time</label>
-<input type="time" id="time">
+<div id="ingredients"></div>
 
-<label>Exclude Ingredients</label>
-<select id="exclude" multiple>
-    <option>Chilli</option>
-    <option>Peanuts</option>
-    <option>Coriander</option>
-    <option>Spring Onion</option>
-</select>
+<textarea
+id="notes"
+placeholder="Special Notes">
+</textarea>
 
-<label>Special Notes</label>
-<textarea id="notes"></textarea>
-
-<button type="submit">
+<button onclick="submitOrder()">
 Place Order
 </button>
 
-</form>
-
-</div>
-
 <script>
 
-document.getElementById("orderForm")
-.addEventListener("submit", function(e){
+const API_URL =
+"PASTE_YOUR_APPS_SCRIPT_URL_HERE";
 
-e.preventDefault();
+let menuData=[];
 
-const formURL =
-"https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse";
+async function loadData(){
 
-const excludes = Array.from(
-document.getElementById("exclude").selectedOptions
-).map(o => o.value).join(", ");
+const response =
+await fetch(API_URL);
 
-const formData = new FormData();
+const data =
+await response.json();
 
-formData.append(
-"entry.111111111",
-document.getElementById("name").value
+menuData = data.menu;
+
+loadDates();
+loadIngredients(data.ingredients);
+loadTimeSlots(data.timeslots);
+
+}
+
+function loadDates(){
+
+const dateSelect =
+document.getElementById("date");
+
+const dates=[
+...new Set(
+menuData.slice(1)
+.map(r=>r[0])
+)
+];
+
+dates.forEach(date=>{
+
+const option =
+document.createElement("option");
+
+option.value=date;
+option.text=date;
+
+dateSelect.add(option);
+
+});
+
+dateSelect.onchange =
+updateMeals;
+
+updateMeals();
+
+}
+
+function updateMeals(){
+
+const selectedDate =
+document.getElementById("date").value;
+
+const mealSelect =
+document.getElementById("meal");
+
+mealSelect.innerHTML="";
+
+const meals=[
+...new Set(
+menuData.slice(1)
+.filter(r=>r[0]==selectedDate)
+.map(r=>r[1])
+)
+];
+
+meals.forEach(meal=>{
+
+const option =
+document.createElement("option");
+
+option.value=meal;
+option.text=meal;
+
+mealSelect.add(option);
+
+});
+
+mealSelect.onchange=
+updateFood;
+
+updateFood();
+
+}
+
+function updateFood(){
+
+const date =
+document.getElementById("date").value;
+
+const meal =
+document.getElementById("meal").value;
+
+const foodSelect =
+document.getElementById("food");
+
+foodSelect.innerHTML="";
+
+const foods =
+menuData.slice(1)
+.filter(r=>
+r[0]==date &&
+r[1]==meal
 );
 
-formData.append(
-"entry.222222222",
-document.getElementById("date").value
-);
+foods.forEach(food=>{
 
-formData.append(
-"entry.333333333",
-document.getElementById("meal").value
-);
+const option =
+document.createElement("option");
 
-formData.append(
-"entry.444444444",
-document.getElementById("food").value
-);
+option.value=food[2];
+option.text=food[2];
 
-formData.append(
-"entry.555555555",
-document.getElementById("time").value
-);
+foodSelect.add(option);
 
-formData.append(
-"entry.666666666",
-excludes
-);
+});
 
-formData.append(
-"entry.777777777",
+}
+
+function loadIngredients(data){
+
+const div =
+document.getElementById("ingredients");
+
+div.innerHTML="";
+
+data.slice(1).forEach(row=>{
+
+div.innerHTML += `
+<label>
+<input type="checkbox"
+value="${row[0]}"
+class="ingredient">
+${row[0]}
+</label><br>
+`;
+
+});
+
+}
+
+function loadTimeSlots(data){
+
+const select =
+document.getElementById("time");
+
+data.slice(1).forEach(row=>{
+
+const option =
+document.createElement("option");
+
+option.value=row[0];
+
+option.text=row[0];
+
+select.add(option);
+
+});
+
+}
+
+async function submitOrder(){
+
+const exclusions =
+Array.from(
+document.querySelectorAll(
+".ingredient:checked"
+)
+).map(x=>x.value);
+
+await fetch(API_URL,{
+method:"POST",
+body:JSON.stringify({
+name:
+document.getElementById("name").value,
+
+date:
+document.getElementById("date").value,
+
+meal:
+document.getElementById("meal").value,
+
+food:
+document.getElementById("food").value,
+
+time:
+document.getElementById("time").value,
+
+exclusions:
+exclusions.join(", "),
+
+notes:
 document.getElementById("notes").value
-);
-
-fetch(formURL,{
-    method:"POST",
-    mode:"no-cors",
-    body:formData
+})
 });
 
 alert("Order submitted!");
 
-document.getElementById("orderForm").reset();
+}
 
-});
+loadData();
 
 </script>
 
